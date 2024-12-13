@@ -1,0 +1,111 @@
+/* App Container */
+.app-container {
+  font-family: 'Arial', sans-serif;
+  color: #61dafb; /* Light blue text */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(40, 44, 52, 0.8), rgba(58, 63, 71, 0.8)); /* Gradient background with transparency */
+  background-image: url('https://media.istockphoto.com/id/1330082123/video/abstract-filmstrip-background-loop.jpg?s=640x640&k=20&c=YwZ34ET3uwgD3wt3vDgP4NVq0KPbVxEaY880Xpeo2P0='); /* Background image */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-blend-mode: overlay; /* Blending background image with the gradient */
+}
+
+/* Header Styling */
+h1 {
+  font-size: 2.5rem;
+  color: #61dafb; /* Light blue color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Subtle shadow for better visibility */
+}
+
+/* Search Container */
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Input Styling */
+input {
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+  width: 250px;
+  background-color: #3a3f47; /* Darker background for input */
+  color: #61dafb; /* Light blue text */
+  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+input:focus {
+  background-color: #444c56; /* Slightly lighter on focus */
+  box-shadow: 0 0 8px rgba(97, 218, 251, 0.8); /* Glowing effect */
+}
+
+/* Button Styling */
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #61dafb; /* Light blue background */
+  color: #282c34; /* Dark text */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #4fa3e2; /* Darker blue on hover */
+  transform: scale(1.1); /* Slight scaling effect */
+}
+
+/* Loading Spinner */
+.loading {
+  color: #61dafb;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+/* Recommendations Section */
+.recommendations {
+  margin-top: 20px;
+  text-align: center;
+  max-width: 500px; /* Restrict max width of recommendation list */
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background for recommendations */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+.recommendations ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendations li {
+  margin: 12px 0;
+  font-size: 18px;
+  color: #61dafb; /* Light blue color */
+  transition: transform 0.3s ease-in-out, color 0.3s ease;
+}
+
+.recommendations li:hover {
+  transform: translateX(10px); /* Slide effect on hover */
+  color: #ffffff; /* Highlight on hover */
+}
+
+/* No Results */
+.no-results {
+  margin-top: 20px;
+  color: #ff4757;
+  font-size: 18px;
+  text-align: center;
+}
