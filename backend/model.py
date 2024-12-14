@@ -5,7 +5,7 @@ from tensorflow.keras.utils import custom_object_scope
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
-# Set precision policy
+# Set precision policy for training
 policy = Policy('float16')
 mixed_precision.set_global_policy(policy)
 
@@ -41,8 +41,12 @@ class MovieLensModel(tf.keras.Model):
     def from_config(cls, config):
         return cls(**config)
 
-# Function to load model with custom object scope
+# Function to load model with custom object scope and handle precision policy
 def load_movie_lens_model(model_path, num_users, num_movies, user_ids, movie_ids):
     with custom_object_scope({'MovieLensModel': MovieLensModel}):
         model = tf.keras.models.load_model(model_path)
+        
+        # Reapply the precision policy after loading the model
+        mixed_precision.set_global_policy(Policy('float16'))
+    
     return model
