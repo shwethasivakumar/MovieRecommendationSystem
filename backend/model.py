@@ -1,13 +1,13 @@
-from tensorflow.keras import mixed_precision
 from tensorflow.keras.mixed_precision import Policy
 from tensorflow.keras.saving import register_keras_serializable
 from tensorflow.keras.utils import custom_object_scope
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
-# Set precision policy for training
-policy = Policy('float16')
-mixed_precision.set_global_policy(policy)
+# Register mixed precision DTypePolicy as a custom object
+@register_keras_serializable()
+class DTypePolicy(Policy):
+    pass  # Register this policy explicitly for saving/loading compatibility
 
 @register_keras_serializable()
 class MovieLensModel(tf.keras.Model):
@@ -41,12 +41,12 @@ class MovieLensModel(tf.keras.Model):
     def from_config(cls, config):
         return cls(**config)
 
-# Function to load model with custom object scope and handle precision policy
+# Function to load the model with DTypePolicy and other custom objects
 def load_movie_lens_model(model_path, num_users, num_movies, user_ids, movie_ids):
-    with custom_object_scope({'MovieLensModel': MovieLensModel}):
+    with custom_object_scope({'MovieLensModel': MovieLensModel, 'DTypePolicy': DTypePolicy}):
         model = tf.keras.models.load_model(model_path)
-        
-        # Reapply the precision policy after loading the model
-        mixed_precision.set_global_policy(Policy('float16'))
+
+        # Reapply mixed precision policy
+        tf.keras.mixed_precision.set_global_policy(Policy('float16'))
     
     return model
