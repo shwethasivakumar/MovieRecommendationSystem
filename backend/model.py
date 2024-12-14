@@ -1,6 +1,7 @@
 from tensorflow.keras import mixed_precision
 from tensorflow.keras.mixed_precision import Policy
 from tensorflow.keras.saving import register_keras_serializable
+from tensorflow.keras.utils import custom_object_scope
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
@@ -40,7 +41,8 @@ class MovieLensModel(tf.keras.Model):
     def from_config(cls, config):
         return cls(**config)
 
-# Function to load model
+# Function to load model with custom object scope
 def load_movie_lens_model(model_path, num_users, num_movies, user_ids, movie_ids):
-    model = tf.keras.models.load_model(model_path, custom_objects={'MovieLensModel': MovieLensModel})
+    with custom_object_scope({'MovieLensModel': MovieLensModel}):
+        model = tf.keras.models.load_model(model_path)
     return model
