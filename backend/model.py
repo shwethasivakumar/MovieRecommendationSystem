@@ -1,11 +1,12 @@
-from tensorflow.keras.mixed_precision import experimental as mixed_precision
+from tensorflow.keras.mixed_precision import Policy
 from keras.saving import register_keras_serializable
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
 # Set precision policy
-policy = mixed_precision.Policy('float32')
-mixed_precision.set_policy(policy)
+# Set the policy (example)
+policy = Policy('float16')
+mixed_precision.set_global_policy(policy)
 
 @register_keras_serializable()
 class MovieLensModel(tf.keras.Model):
