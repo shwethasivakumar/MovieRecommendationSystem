@@ -1,3 +1,8 @@
+from keras.saving import register_keras_serializable
+import tensorflow as tf
+from tensorflow.keras.layers import Embedding, Dense, StringLookup
+
+# Your other code follows...
 @register_keras_serializable()
 class MovieLensModel(tf.keras.Model):
     def __init__(self, num_users, num_movies, embedding_dim=32, **kwargs):
