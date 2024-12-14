@@ -1,10 +1,9 @@
-from tensorflow.keras.mixed_precision import Policy
+from tensorflow.keras.mixed_precision import mixed_precision, Policy
 from tensorflow.keras.saving import register_keras_serializable
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
 # Set precision policy
-# Set the policy (example)
 policy = Policy('float16')
 mixed_precision.set_global_policy(policy)
 
