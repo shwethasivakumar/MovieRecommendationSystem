@@ -1,34 +1,29 @@
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
 from keras.saving import register_keras_serializable
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
-# Your other code follows...
+# Set precision policy
+policy = mixed_precision.Policy('float32')
+mixed_precision.set_policy(policy)
+
 @register_keras_serializable()
 class MovieLensModel(tf.keras.Model):
-    def __init__(self, num_users, num_movies, embedding_dim=32, **kwargs):
+    def __init__(self, num_users, num_movies, user_ids=None, movie_ids=None, embedding_dim=32, **kwargs):
         super(MovieLensModel, self).__init__(**kwargs)
-        
-        # Define the embedding layers for users and movies
-        self.user_embedding = tf.keras.layers.Embedding(input_dim=num_users, output_dim=embedding_dim)
-        self.movie_embedding = tf.keras.layers.Embedding(input_dim=num_movies, output_dim=embedding_dim)
-
-        # Define a dense layer for output prediction
-        self.dense = tf.keras.layers.Dense(1)
-
-        # StringLookup layers for user and movie IDs
-        self.user_lookup = tf.keras.layers.StringLookup(vocabulary=user_ids, mask_token=None, num_oov_indices=0)
-        self.movie_lookup = tf.keras.layers.StringLookup(vocabulary=movie_ids, mask_token=None, num_oov_indices=0)
+        if user_ids is None or movie_ids is None:
+            raise ValueError("user_ids and movie_ids must be provided")
+        self.user_embedding = Embedding(input_dim=num_users, output_dim=embedding_dim)
+        self.movie_embedding = Embedding(input_dim=num_movies, output_dim=embedding_dim)
+        self.dense = Dense(1)
+        self.user_lookup = StringLookup(vocabulary=user_ids, mask_token=None, num_oov_indices=0)
+        self.movie_lookup = StringLookup(vocabulary=movie_ids, mask_token=None, num_oov_indices=0)
 
     def call(self, inputs):
-        # Convert string IDs to integer indices using StringLookup
         user_id = self.user_lookup(tf.as_string(inputs["user_id"]))
         movie_id = self.movie_lookup(tf.as_string(inputs["movie_id"]))
-
-        # Get embedding vectors for user and movie
         user_vector = self.user_embedding(user_id)
         movie_vector = self.movie_embedding(movie_id)
-
-        # Dot product of user and movie vectors, then pass through dense layer
         return self.dense(user_vector * movie_vector)
 
     def get_config(self):
@@ -43,3 +38,8 @@ class MovieLensModel(tf.keras.Model):
     @classmethod
     def from_config(cls, config):
         return cls(**config)
+
+# Function to load model
+def load_movie_lens_model(model_path, num_users, num_movies, user_ids, movie_ids):
+    model = tf.keras.models.load_model(model_path, custom_objects={'MovieLensModel': MovieLensModel})
+    return model
