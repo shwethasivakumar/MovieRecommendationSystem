@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify
-import tensorflow as tf
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from model import MovieLensModel
-import random
+import tensorflow as tf
 from flask_cors import CORS
 
 def load_movie_lens_model(model_path, num_users, num_movies, user_ids=None, movie_ids=None):
     # Create a new instance of MovieLensModel with the required parameters
     model = MovieLensModel(num_users=num_users, num_movies=num_movies, user_ids=user_ids, movie_ids=movie_ids)
+    model.load_weights(model_path)  # Load the pre-trained model weights
     return model
 
 # Load the movie dataset
@@ -65,8 +65,6 @@ def recommend():
         return jsonify({"recommendations": []})  # Send an empty list if no recommendations
     return jsonify({"recommendations": recommendations})
   
-    
-
 def get_recommendations_by_movie_name(movie_name, user_id, top_n=5):
     try:
         # Get movie ID from the dataset based on the movie name
@@ -117,8 +115,5 @@ def get_recommendations_by_movie_name(movie_name, user_id, top_n=5):
     similar_movie_names = movies_df[movies_df['movie_id'].isin(similar_movie_ids)]['title'].tolist()
     return similar_movie_names
 
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-
