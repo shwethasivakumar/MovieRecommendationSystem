@@ -1,52 +1,85 @@
-from tensorflow.keras.mixed_precision import Policy
-from tensorflow.keras.saving import register_keras_serializable
-from tensorflow.keras.utils import custom_object_scope
 import tensorflow as tf
-from tensorflow.keras.layers import Embedding, Dense, StringLookup
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Embedding, Dense, Flatten, Input
+from tensorflow.keras.utils import custom_object_scope
+from tensorflow.keras.mixed_precision import DTypePolicy
 
-# Register mixed precision DTypePolicy as a custom object
-@register_keras_serializable()
-class DTypePolicy(Policy):
-    pass  # Register this policy explicitly for saving/loading compatibility
-
-@register_keras_serializable()
-class MovieLensModel(tf.keras.Model):
-    def __init__(self, num_users, num_movies, user_ids=None, movie_ids=None, embedding_dim=32, **kwargs):
+class MovieLensModel(Model):
+    def __init__(self, num_users, num_movies, embedding_dim=32, **kwargs):
         super(MovieLensModel, self).__init__(**kwargs)
-        if user_ids is None or movie_ids is None:
-            raise ValueError("user_ids and movie_ids must be provided")
-        self.user_embedding = Embedding(input_dim=num_users, output_dim=embedding_dim)
-        self.movie_embedding = Embedding(input_dim=num_movies, output_dim=embedding_dim)
-        self.dense = Dense(1)
-        self.user_lookup = StringLookup(vocabulary=user_ids, mask_token=None, num_oov_indices=0)
-        self.movie_lookup = StringLookup(vocabulary=movie_ids, mask_token=None, num_oov_indices=0)
+        
+        # Embedding layers
+        self.user_embedding = Embedding(input_dim=num_users, output_dim=embedding_dim, name="user_embedding")
+        self.movie_embedding = Embedding(input_dim=num_movies, output_dim=embedding_dim, name="movie_embedding")
+        
+        # Fully connected layers
+        self.dense1 = Dense(64, activation="relu", name="dense1")
+        self.dense2 = Dense(32, activation="relu", name="dense2")
+        self.output_layer = Dense(1, activation="linear", name="output_layer")
 
     def call(self, inputs):
-        user_id = self.user_lookup(tf.as_string(inputs["user_id"]))
-        movie_id = self.movie_lookup(tf.as_string(inputs["movie_id"]))
-        user_vector = self.user_embedding(user_id)
-        movie_vector = self.movie_embedding(movie_id)
-        return self.dense(user_vector * movie_vector)
+        user_input, movie_input = inputs
+
+        # Embed users and movies
+        user_vector = self.user_embedding(user_input)
+        movie_vector = self.movie_embedding(movie_input)
+
+        # Combine user and movie embeddings
+        combined = tf.concat([user_vector, movie_vector], axis=-1)
+        combined = Flatten()(combined)
+
+        # Pass through dense layers
+        x = self.dense1(combined)
+        x = self.dense2(x)
+        output = self.output_layer(x)
+
+        return output
 
     def get_config(self):
         config = super(MovieLensModel, self).get_config()
         config.update({
-            'num_users': self.user_embedding.input_dim,
-            'num_movies': self.movie_embedding.input_dim,
-            'embedding_dim': self.user_embedding.output_dim
+            "num_users": self.user_embedding.input_dim,
+            "num_movies": self.movie_embedding.input_dim,
+            "embedding_dim": self.user_embedding.output_dim,
+            "dtype_policy": str(DTypePolicy("float32"))  # Explicitly set dtype policy
         })
         return config
 
     @classmethod
     def from_config(cls, config):
-        return cls(**config)
+        return cls(
+            num_users=config["num_users"],
+            num_movies=config["num_movies"],
+            embedding_dim=config["embedding_dim"]
+        )
 
-# Function to load the model with DTypePolicy and other custom objects
-def load_movie_lens_model(model_path, num_users, num_movies, user_ids, movie_ids):
-    with custom_object_scope({'MovieLensModel': MovieLensModel, 'DTypePolicy': DTypePolicy}):
-        model = tf.keras.models.load_model(model_path)
+# Function to save the model
+def save_movielens_model(model, path):
+    model.save(path, save_format="tf")  # Save in SavedModel format
 
-        # Reapply mixed precision policy
-        tf.keras.mixed_precision.set_global_policy(Policy('float16'))
-    
-    return model
+# Function to load the model
+def load_movielens_model(path):
+    with custom_object_scope({"MovieLensModel": MovieLensModel, "DTypePolicy": DTypePolicy}):
+        return tf.keras.models.load_model(path)
+
+# Example usage
+if __name__ == "__main__":
+    num_users = 1000
+    num_movies = 500
+    embedding_dim = 32
+
+    # Create the model
+    model = MovieLensModel(num_users=num_users, num_movies=num_movies, embedding_dim=embedding_dim)
+
+    # Compile the model
+    model.compile(optimizer="adam", loss="mse")
+
+    # Save the model
+    save_path = "movielens/movie_recommender_model"
+    save_movielens_model(model, save_path)
+
+    # Load the model
+    loaded_model = load_movielens_model(save_path)
+
+    # Print summary
+    loaded_model.summary()
