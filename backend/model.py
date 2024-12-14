@@ -1,5 +1,5 @@
 from tensorflow.keras.mixed_precision import Policy
-from keras.saving import register_keras_serializable
+from tensorflow.keras.saving import register_keras_serializable
 import tensorflow as tf
 from tensorflow.keras.layers import Embedding, Dense, StringLookup
 
