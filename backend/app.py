@@ -6,9 +6,13 @@ import tensorflow as tf
 from flask_cors import CORS
 
 def load_movie_lens_model(model_path, num_users, num_movies, user_ids=None, movie_ids=None):
-    # Create a new instance of MovieLensModel with the required parameters
-    model = MovieLensModel(num_users=num_users, num_movies=num_movies, user_ids=user_ids, movie_ids=movie_ids)
-    model.load_weights(model_path)  # Load the pre-trained model weights
+    # Load the pre-trained model architecture and weights
+    try:
+        model = tf.keras.models.load_model(model_path, custom_objects={'MovieLensModel': MovieLensModel})
+        print("Model loaded successfully!")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        raise
     return model
 
 # Load the movie dataset
@@ -85,7 +89,6 @@ def get_recommendations_by_movie_name(movie_name, user_id, top_n=5):
     ratings_df_copy = ratings_df.copy()
 
     # Add the assumed rating for the movie if the user hasn't rated it
-    # This assumes the user rates the selected movie highly (like 5)
     ratings_df_copy = pd.concat([ratings_df_copy, pd.DataFrame({
         'user_id': [user_id],
         'movie_id': [movie_id],
